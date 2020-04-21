@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading;
-#if NETCOREAPP3_0 || NETCOREAPP3_1
+#if NETCOREAPP3_1
 using System.Threading.Tasks;
 #endif
 
@@ -12,9 +12,9 @@ namespace Meziantou.Framework
 {
     [DebuggerDisplay("{FullPath}")]
     public sealed class TemporaryDirectory : IDisposable
-#if NETCOREAPP3_0 || NETCOREAPP3_1
+#if NETCOREAPP3_1
         , IAsyncDisposable
-#elif NET461 || NETSTANDARD2_0 || NETCOREAPP2_1
+#elif NET461 || NETSTANDARD2_0
 #else
 #error Platform not supported
 #endif
@@ -70,7 +70,7 @@ namespace Meziantou.Framework
                     var tempPath = filePath + "_";
                     while (Directory.Exists(filePath))
                     {
-                        filePath = tempPath + count;
+                        filePath = tempPath + count.ToStringInvariant();
                         count++;
                     }
 
@@ -153,7 +153,7 @@ namespace Meziantou.Framework
             Process.Start(FullPath);
         }
 
-#if NETCOREAPP3_0 || NETCOREAPP3_1
+#if NETCOREAPP3_1
         public async ValueTask DisposeAsync()
         {
             await DeleteFileSystemEntryAsync(new DirectoryInfo(FullPath)).ConfigureAwait(false);

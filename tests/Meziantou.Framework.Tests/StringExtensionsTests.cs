@@ -1,4 +1,7 @@
-﻿using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xunit;
 
 namespace Meziantou.Framework.Tests
 {
@@ -68,6 +71,60 @@ namespace Meziantou.Framework.Tests
         public void ContainsIgnoreCase(string left, string right, bool expectedResult)
         {
             Assert.Equal(expectedResult, left.ContainsIgnoreCase(right));
+        }
+
+        [Fact]
+        public void SplitLine_Stop()
+        {
+            var actual = new List<(string, string)>();
+            foreach (var (line, separator) in "a\nb\nc\nd".SplitLines())
+            {
+                actual.Add((line.ToString(), separator.ToString()));
+                if (line.Equals("b", StringComparison.Ordinal))
+                    break;
+            }
+
+            Assert.Equal(new[] { ("a", "\n"), ("b", "\n") }, actual);
+        }
+
+        [Theory]
+        [MemberData(nameof(SplitLineData))]
+        public void SplitLineSpan(string str, (string Line, string Separator)[] expected)
+        {
+            var actual = new List<(string, string)>();
+            foreach (var (line, separator) in str.SplitLines())
+            {
+                actual.Add((line.ToString(), separator.ToString()));
+            }
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [MemberData(nameof(SplitLineData))]
+        public void SplitLineSpan2(string str, (string Line, string Separator)[] expected)
+        {
+            var actual = new List<string>();
+            foreach (ReadOnlySpan<char> line in str.SplitLines())
+            {
+                actual.Add(line.ToString());
+            }
+
+            Assert.Equal(expected.Select(item => item.Line).ToArray(), actual);
+        }
+
+        public static TheoryData<string, (string Line, string Separator)[]> SplitLineData()
+        {
+            return new TheoryData<string, (string Line, string Separator)[]>
+            {
+                { "", Array.Empty<(string, string)>() },
+                { "ab", new[] { ("ab", "") } },
+                { "ab\r\n", new[] { ("ab", "\r\n") } },
+                { "ab\r\ncd", new[] { ("ab", "\r\n"), ("cd", "") } },
+                { "ab\rcd", new[] { ("ab", "\r"), ("cd", "") } },
+                { "ab\ncd", new[] { ("ab", "\n"), ("cd", "") } },
+                { "\ncd", new[] { ("", "\n"), ("cd", "") } },
+            };
         }
     }
 }

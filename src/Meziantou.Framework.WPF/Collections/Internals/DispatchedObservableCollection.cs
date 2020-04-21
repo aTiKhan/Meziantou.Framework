@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Windows.Threading;
 
@@ -26,8 +27,16 @@ namespace Meziantou.Framework.WPF.Collections
         {
             if (!IsOnDispatcherThread())
             {
-                throw new InvalidOperationException("The collection must be accessed from the dispatcher thread only. Current thread ID: " + Thread.CurrentThread.ManagedThreadId);
+                throw new InvalidOperationException("The collection must be accessed from the dispatcher thread only. Current thread ID: " + Thread.CurrentThread.ManagedThreadId.ToString(CultureInfo.InvariantCulture));
             }
+        }
+
+        private static void AssertType(object? value, string argumentName)
+        {
+            if (value is null || value is T)
+                return;
+
+            throw new ArgumentException($"value must be of type '{typeof(T).FullName}'", argumentName);
         }
 
         public int Count
@@ -104,6 +113,7 @@ namespace Meziantou.Framework.WPF.Collections
             set
             {
                 // it will immediatly modify both collections as we are on the dispatcher thread
+                AssertType(value, nameof(value));
                 AssertIsOnDispatcherThread();
                 _collection[index] = (T)value!;
             }
@@ -294,6 +304,7 @@ namespace Meziantou.Framework.WPF.Collections
         int IList.Add(object? value)
         {
             // it will immediatly modify both collections as we are on the dispatcher thread
+            AssertType(value, nameof(value));
             AssertIsOnDispatcherThread();
             return ((IList)_collection).Add(value);
         }
@@ -301,6 +312,7 @@ namespace Meziantou.Framework.WPF.Collections
         bool IList.Contains(object? value)
         {
             // it will immediatly modify both collections as we are on the dispatcher thread
+            AssertType(value, nameof(value));
             AssertIsOnDispatcherThread();
             return ((IList)_collection).Contains(value);
         }
@@ -315,6 +327,7 @@ namespace Meziantou.Framework.WPF.Collections
         int IList.IndexOf(object? value)
         {
             // it will immediatly modify both collections as we are on the dispatcher thread
+            AssertType(value, nameof(value));
             AssertIsOnDispatcherThread();
             return _items.IndexOf((T)value!);
         }
@@ -322,6 +335,7 @@ namespace Meziantou.Framework.WPF.Collections
         void IList.Insert(int index, object? value)
         {
             // it will immediatly modify both collections as we are on the dispatcher thread
+            AssertType(value, nameof(value));
             AssertIsOnDispatcherThread();
             ((IList)_collection).Insert(index, value);
         }
@@ -329,6 +343,7 @@ namespace Meziantou.Framework.WPF.Collections
         void IList.Remove(object? value)
         {
             // it will immediatly modify both collections as we are on the dispatcher thread
+            AssertType(value, nameof(value));
             AssertIsOnDispatcherThread();
             ((IList)_collection).Remove(value);
         }
